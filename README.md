@@ -44,7 +44,6 @@ graph TD
     subgraph "Production Environment (Google Cloud)"
         D -- "Deploy New Revision" --> E[Google Cloud Run];
         E -- "Serves Application" --> F[User's Browser];
-        E -- "Reads/Writes Messages" --> G[Google Cloud SQL];
     end
 
     F -- "HTTPS Requests & WebSocket" --> E;
