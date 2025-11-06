@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent none
 
     triggers {
         pollSCM('* * * * *')
@@ -15,25 +15,25 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Build & Test') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    args '--entrypoint=""'
+                }
+            }
             steps {
                 echo 'Checking out code...'
                 checkout scm
-            }
-        }
-
-        stage('Build & Test') {
-            steps {
-                docker.image('node:18-alpine').inside {
-                    echo 'Building the Node.js application...'
-                    sh 'npm install'
-                    echo 'Testing the application...'
-                    // Add test commands here if you have any
-                }
+                echo 'Building the Node.js application...'
+                sh 'npm install'
+                echo 'Testing the application...'
+                // Add test commands here if you have any
             }
         }
 
         stage('Docker Build & Push') {
+            agent any
             steps {
                 echo 'Authenticating with Google Artifact Registry...'
                 withCredentials([string(credentialsId: 'gcp-service-account-key', variable: 'GCP_SERVICE_ACCOUNT_KEY')]) {
@@ -50,6 +50,7 @@ pipeline {
         }
 
         stage('Deploy to Cloud Run') {
+            agent any
             steps {
                 echo 'Deploying the container to Cloud Run...'
                 sh "gcloud run deploy ${IMAGE_NAME}-service --image=${IMAGE_PATH}:${IMAGE_TAG} --platform=managed --region=${REGION} --allow-unauthenticated --project=${PROJECT_ID}"
