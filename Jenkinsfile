@@ -37,16 +37,16 @@ pipeline {
             }
         }
 
-        stage('Podman Build & Push') {
+        stage('Docker Build & Push') {
             steps {
                 echo 'Authenticating with Google Artifact Registry...'
-                sh 'gcloud auth print-access-token | podman login -u oauth2accesstoken --password-stdin ${REGION}-docker.pkg.dev'
+                sh 'gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin ${REGION}-docker.pkg.dev'
 
-                echo 'Building Podman image...'
-                sh "podman build -t ${IMAGE_PATH}:${IMAGE_TAG} ."
+                echo 'Building Docker image...'
+                sh "docker build -t ${IMAGE_PATH}:${IMAGE_TAG} ."
                 
-                echo 'Pushing Podman image to Google Artifact Registry...'
-                sh "podman push ${IMAGE_PATH}:${IMAGE_TAG}"
+                echo 'Pushing Docker image to Google Artifact Registry...'
+                sh "docker push ${IMAGE_PATH}:${IMAGE_TAG}"
             }
         }
 
