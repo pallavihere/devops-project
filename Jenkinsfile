@@ -19,6 +19,9 @@ pipeline {
         }
 
         stage('Build & Test') {
+            agent {
+                docker { image 'node:18-alpine' }
+            }
             steps {
                 echo 'Building the Node.js application...'
                 sh 'npm install'
