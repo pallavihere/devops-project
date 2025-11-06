@@ -1,5 +1,5 @@
 pipeline {
-    agent none
+    agent any
 
     triggers {
         pollSCM('* * * * *')
@@ -15,29 +15,29 @@ pipeline {
     }
 
     stages {
-        stage('Build & Test') {
-            agent {
-                docker { image 'node:18-alpine' }
-            }
-            environment {
-                npm_config_cache = '.npm-cache'
-            }
+        stage('Checkout') {
             steps {
                 echo 'Checking out code...'
                 checkout scm
-                echo 'Building the Node.js application...'
-                sh 'npm install'
-                echo 'Testing the application...'
-                // Add test commands here if you have any
+            }
+        }
+
+        stage('Build & Test') {
+            steps {
+                docker.image('node:18-alpine').inside {
+                    echo 'Building the Node.js application...'
+                    sh 'npm install'
+                    echo 'Testing the application...'
+                    // Add test commands here if you have any
+                }
             }
         }
 
         stage('Docker Build & Push') {
-            agent any
             steps {
                 echo 'Authenticating with Google Artifact Registry...'
                 withCredentials([string(credentialsId: 'gcp-service-account-key', variable: 'GCP_SERVICE_ACCOUNT_KEY')]) {
-                    sh 'echo "$GCP_SERVICE_ACCOUNT_KEY" | gcloud auth activate-service-account --key-file=-'
+                    sh 'echo "$GCP_SERVICE_ACCOUNT_KEY" | gcloud auth activate-service-account jenkins-deployer@project-vaani-1234.iam.gserviceaccount.com --key-file=-'
                     sh 'gcloud auth configure-docker ${REGION}-docker.pkg.dev'
                 }
 
@@ -50,7 +50,6 @@ pipeline {
         }
 
         stage('Deploy to Cloud Run') {
-            agent any
             steps {
                 echo 'Deploying the container to Cloud Run...'
                 sh "gcloud run deploy ${IMAGE_NAME}-service --image=${IMAGE_PATH}:${IMAGE_TAG} --platform=managed --region=${REGION} --allow-unauthenticated --project=${PROJECT_ID}"
