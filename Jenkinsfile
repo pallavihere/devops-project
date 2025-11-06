@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent none
 
     triggers {
         pollSCM('* * * * *')
@@ -23,6 +23,8 @@ pipeline {
                 npm_config_cache = '.npm-cache'
             }
             steps {
+                echo 'Checking out code...'
+                checkout scm
                 echo 'Building the Node.js application...'
                 sh 'npm install'
                 echo 'Testing the application...'
@@ -31,10 +33,11 @@ pipeline {
         }
 
         stage('Docker Build & Push') {
+            agent any
             steps {
                 echo 'Authenticating with Google Artifact Registry...'
                 withCredentials([string(credentialsId: 'gcp-service-account-key', variable: 'GCP_SERVICE_ACCOUNT_KEY')]) {
-                    sh 'gcloud auth activate-service-account --key-file=- <<< "$GCP_SERVICE_ACCOUNT_KEY"'
+                    sh 'echo "$GCP_SERVICE_ACCOUNT_KEY" | gcloud auth activate-service-account --key-file=-'
                     sh 'gcloud auth configure-docker ${REGION}-docker.pkg.dev'
                 }
 
@@ -47,6 +50,7 @@ pipeline {
         }
 
         stage('Deploy to Cloud Run') {
+            agent any
             steps {
                 echo 'Deploying the container to Cloud Run...'
                 sh "gcloud run deploy ${IMAGE_NAME}-service --image=${IMAGE_PATH}:${IMAGE_TAG} --platform=managed --region=${REGION} --allow-unauthenticated --project=${PROJECT_ID}"
