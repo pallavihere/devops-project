@@ -2,3 +2,4 @@ node_modules
 install-jenkins-v2.sh
 install-jenkins-v3.sh
 install-jenkins.sh
+.npm-cache/
