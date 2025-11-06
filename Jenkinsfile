@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    triggers {
+        pollSCM('* * * * *')
+    }
+
     environment {
         PROJECT_ID = 'project-vaani-1234'
         REGION = 'us-central1'
@@ -19,9 +23,11 @@ pipeline {
         }
 
         stage('Build & Test') {
+            agent {
+                docker { image 'node:18-alpine' }
+            }
             steps {
                 echo 'Building the Node.js application...'
-                sh 'sudo apt-get update && sudo apt-get install -y nodejs npm'
                 sh 'npm install'
                 echo 'Testing the application...'
                 // Add test commands here if you have any
