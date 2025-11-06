@@ -25,6 +25,9 @@ pipeline {
                     args '--entrypoint=""'
                 }
             }
+            environment {
+                npm_config_cache = '.npm-cache'
+            }
             steps {
                 echo 'Checking out code...'
                 checkout scm
