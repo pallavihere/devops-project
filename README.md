@@ -1,4 +1,4 @@
-# 🚀 MessageApp: A DevOps Classroom Project
+# 🚀 MessageApp: A DevOps Project
 
 This project demonstrates a complete CI/CD (Continuous Integration/Continuous Deployment) pipeline for a simple Node.js web application. The pipeline is orchestrated by Jenkins and deploys the application as a container to Google Cloud Run.
 
@@ -110,4 +110,3 @@ The application has two main endpoints:
 ## ⚖️ License
 
 This project is licensed under the MIT License - see the `LICENSE` file for details.
-
