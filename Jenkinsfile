@@ -15,13 +15,6 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                echo 'Checking out code...'
-                checkout scm
-            }
-        }
-
         stage('Build & Test') {
             agent {
                 docker { image 'node:18-alpine' }
@@ -40,7 +33,10 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 echo 'Authenticating with Google Artifact Registry...'
-                sh 'gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin ${REGION}-docker.pkg.dev'
+                withCredentials([string(credentialsId: 'gcp-service-account-key', variable: 'GCP_SERVICE_ACCOUNT_KEY')]) {
+                    sh 'gcloud auth activate-service-account --key-file=- <<< "$GCP_SERVICE_ACCOUNT_KEY"'
+                    sh 'gcloud auth configure-docker ${REGION}-docker.pkg.dev'
+                }
 
                 echo 'Building Docker image...'
                 sh "docker build -t ${IMAGE_PATH}:${IMAGE_TAG} ."
