@@ -67,7 +67,7 @@ pipeline {
             steps {
                 unstash 'source'
                 echo 'Deploying the container to Cloud Run...'
-                sh "gcloud run deploy ${IMAGE_NAME}-service --image=${IMAGE_PATH}:${IMAGE_TAG} --platform=managed --region=${REGION} --allow-unauthenticated --project=${PROJECT_ID}"
+                sh "gcloud run deploy ${IMAGE_NAME}-service --image=${IMAGE_PATH}:${IMAGE_TAG} --platform=managed --region=${REGION} --port=3000 --allow-unauthenticated --project=${PROJECT_ID}"
             }
         }
     }
