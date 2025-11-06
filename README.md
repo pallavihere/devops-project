@@ -26,6 +26,32 @@ This project demonstrates a complete CI/CD (Continuous Integration/Continuous De
 
 ---
 
+## 🏗️ Infrastructure Diagram
+
+This diagram provides a visual representation of the project's infrastructure.
+
+```mermaid
+graph TD
+    subgraph "Developer Workflow"
+        A[Developer] -- "git push" --> B[GitHub Repository];
+    end
+
+    subgraph "CI/CD Pipeline"
+        B -- "Webhook" --> C[Jenkins];
+        C -- "Build & Push Image" --> D[Google Artifact Registry];
+    end
+
+    subgraph "Production Environment (Google Cloud)"
+        D -- "Deploy New Revision" --> E[Google Cloud Run];
+        E -- "Serves Application" --> F[User's Browser];
+        E -- "Reads/Writes Messages" --> G[Google Cloud SQL];
+    end
+
+    F -- "HTTPS Requests & WebSocket" --> E;
+```
+
+---
+
 ## 🔧 Local Development
 
 To run the application on your local machine, you'll need [Node.js](https://nodejs.org/) and [Docker](https://www.docker.com/get-started) installed.
