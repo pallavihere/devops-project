@@ -26,6 +26,9 @@ pipeline {
             agent {
                 docker { image 'node:18-alpine' }
             }
+            environment {
+                npm_config_cache = '.npm-cache'
+            }
             steps {
                 echo 'Building the Node.js application...'
                 sh 'npm install'
