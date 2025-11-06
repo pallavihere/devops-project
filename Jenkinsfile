@@ -19,11 +19,9 @@ pipeline {
         }
 
         stage('Build & Test') {
-            agent {
-                docker { image 'node:18-alpine' }
-            }
             steps {
                 echo 'Building the Node.js application...'
+                sh 'apt-get update && apt-get install -y nodejs npm'
                 sh 'npm install'
                 echo 'Testing the application...'
                 // Add test commands here if you have any
