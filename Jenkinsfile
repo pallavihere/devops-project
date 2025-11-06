@@ -42,8 +42,16 @@ pipeline {
                 unstash 'source'
                 echo 'Authenticating with Google Artifact Registry...'
                 withCredentials([string(credentialsId: 'gcp-service-account-key', variable: 'GCP_SERVICE_ACCOUNT_KEY')]) {
-                    sh 'echo "$GCP_SERVICE_ACCOUNT_KEY" | gcloud auth activate-service-account jenkins-deployer@project-vaani-1234.iam.gserviceaccount.com --key-file=-'
-                    sh 'gcloud auth configure-docker ${REGION}-docker.pkg.dev'
+                    script {
+                        def keyFile = 'gcp-key.json'
+                        try {
+                            writeFile file: keyFile, text: GCP_SERVICE_ACCOUNT_KEY
+                            sh "gcloud auth activate-service-account jenkins-deployer@project-vaani-1234.iam.gserviceaccount.com --key-file=${keyFile}"
+                            sh "gcloud auth configure-docker ${REGION}-docker.pkg.dev"
+                        } finally {
+                            sh "rm -f ${keyFile}"
+                        }
+                    }
                 }
 
                 echo 'Building Docker image...'
