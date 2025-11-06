@@ -2,16 +2,19 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        DOCKER_IMAGE_NAME = "your-dockerhub-username/messageapp"
-        DOCKER_IMAGE_TAG = "latest"
+        PROJECT_ID = 'project-vaani-1234'
+        REGION = 'us-central1'
+        REPO_NAME = 'devops-project-repo'
+        IMAGE_NAME = 'messageapp'
+        IMAGE_TAG = 'latest'
+        IMAGE_PATH = "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out code from GitHub...'
-                git 'https://github.com/your-username/devops-project.git'
+                echo 'Checking out code...'
+                checkout scm
             }
         }
 
@@ -24,25 +27,23 @@ pipeline {
             }
         }
 
-        stage('Docker Build & Push') {
+        stage('Podman Build & Push') {
             steps {
-                echo 'Building Docker image...'
-                sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
+                echo 'Authenticating with Google Artifact Registry...'
+                sh 'gcloud auth print-access-token | podman login -u oauth2accesstoken --password-stdin ${REGION}-docker.pkg.dev'
+
+                echo 'Building Podman image...'
+                sh "podman build -t ${IMAGE_PATH}:${IMAGE_TAG} ."
                 
-                echo 'Logging in to Docker Hub...'
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                
-                echo 'Pushing Docker image to Docker Hub...'
-                sh "docker push ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+                echo 'Pushing Podman image to Google Artifact Registry...'
+                sh "podman push ${IMAGE_PATH}:${IMAGE_TAG}"
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Cloud Run') {
             steps {
-                echo 'Deploying the container...'
-                sh "docker stop messageapp || true"
-                sh "docker rm messageapp || true"
-                sh "docker run -d --name messageapp -p 3000:3000 ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+                echo 'Deploying the container to Cloud Run...'
+                sh "gcloud run deploy ${IMAGE_NAME}-service --image=${IMAGE_PATH}:${IMAGE_TAG} --platform=managed --region=${REGION} --allow-unauthenticated --project=${PROJECT_ID}"
             }
         }
     }
@@ -50,15 +51,12 @@ pipeline {
     post {
         always {
             echo 'Pipeline finished.'
-            sh 'docker logout'
         }
         success {
             echo 'Pipeline succeeded!'
-            // Add email notification for success here
         }
         failure {
             echo 'Pipeline failed.'
-            // Add email notification for failure here
         }
     }
 }
