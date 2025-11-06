@@ -1,5 +1,8 @@
 pipeline {
-    agent none
+    agent any
+    options {
+        skipDefaultCheckout true
+    }
 
     triggers {
         pollSCM('* * * * *')
@@ -29,12 +32,14 @@ pipeline {
                 sh 'npm install'
                 echo 'Testing the application...'
                 // Add test commands here if you have any
+                stash name: 'source', includes: '**'
             }
         }
 
         stage('Docker Build & Push') {
             agent any
             steps {
+                unstash 'source'
                 echo 'Authenticating with Google Artifact Registry...'
                 withCredentials([string(credentialsId: 'gcp-service-account-key', variable: 'GCP_SERVICE_ACCOUNT_KEY')]) {
                     sh 'echo "$GCP_SERVICE_ACCOUNT_KEY" | gcloud auth activate-service-account jenkins-deployer@project-vaani-1234.iam.gserviceaccount.com --key-file=-'
@@ -52,6 +57,7 @@ pipeline {
         stage('Deploy to Cloud Run') {
             agent any
             steps {
+                unstash 'source'
                 echo 'Deploying the container to Cloud Run...'
                 sh "gcloud run deploy ${IMAGE_NAME}-service --image=${IMAGE_PATH}:${IMAGE_TAG} --platform=managed --region=${REGION} --allow-unauthenticated --project=${PROJECT_ID}"
             }
