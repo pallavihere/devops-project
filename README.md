@@ -1,6 +1,6 @@
 # MessageApp
 
-A simple Node.js web application designed to be deployed with a CI/CD pipeline using Docker and Jenkins.
+A simple Node.js web application designed to be deployed with a CI/CD pipeline using Jenkins, Docker, Podman, and Google Cloud Run.
 
 ---
 
@@ -17,7 +17,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/devops-project.git
+    git clone https://github.com/pallavihere/devops-project.git
     cd devops-project
     ```
 
@@ -55,16 +55,16 @@ The application will be available at `http://localhost:3000`.
 
 ## ⚙️ CI/CD Pipeline
 
-This project includes a `Jenkinsfile` to demonstrate a complete CI/CD pipeline for automated building, testing, and deployment.
+This project includes a `Jenkinsfile` to demonstrate a complete CI/CD pipeline for automated building, testing, and deployment to Google Cloud Run.
 
 ### Pipeline Stages
 
 1.  **Checkout**: Clones the source code from the Git repository.
-2.  **Build & Test**: Installs Node.js dependencies and runs tests (if any are configured).
-3.  **Docker Build & Push**: Builds a Docker image of the application and pushes it to a container registry (e.g., Docker Hub).
-4.  **Deploy**: Stops any existing container and runs a new one with the latest image.
+2.  **Build & Test**: Installs Node.js dependencies and runs tests (if any are configured) inside a Docker container.
+3.  **Podman Build & Push**: Builds a Podman image of the application and pushes it to Google Artifact Registry.
+4.  **Deploy to Cloud Run**: Deploys the container image to Google Cloud Run.
 
-To use the pipeline, you need a Jenkins server with the Docker Pipeline plugin installed and configured with credentials for your container registry.
+The pipeline is configured to automatically trigger a new build when changes are pushed to the `main` branch.
 
 ---
 
