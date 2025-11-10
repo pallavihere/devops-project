@@ -129,6 +129,8 @@ The application has two main endpoints:
 -   **Introduce a staging environment:** Add a staging environment to the pipeline to test the application before deploying to production.
 -   **Use webhooks for build triggers:** Switch from SCM polling to GitHub webhooks for more efficient and faster build triggers.
 -   **Implement secrets management:** Use a secrets management tool like HashiCorp Vault or Google Secret Manager to manage secrets more securely.
+-   **CI/CD Pipeline integrated using Jenkins by Tamanna
+
 
 ---
 
